@@ -5,3 +5,4 @@ class User( ndb.Model ):
     lastname = ndb.StringProperty()
     initials = ndb.StringProperty()
     email = ndb.StringProperty()
+    boards = ndb.StringProperty( repeated = True )

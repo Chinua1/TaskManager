@@ -122,7 +122,7 @@ class MainPage( webapp2.RequestHandler ):
                 logged_user.lastname = lastname
                 logged_user.email = user.email()
                 logged_user.put()
-                message = "Thank you " + firstname.capitalize() + " " + lastname.capitalize() + " for updating your details."
+                message = "Thank you " + firstname.capitalize() + " " + lastname.capitalize() + " for registering your account."
                 query_string = "?success=" + message + "&firstname=" + firstname + "&lastname=" + lastname
                 url = "/" + query_string
                 self.redirect( url )
