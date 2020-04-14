@@ -4,6 +4,36 @@
     <title>Burello - Dashboard</title>
 {% endblock %}
 
-{% block body %}
+{% block header_section %}
+    {% if user and completed_profile %}
+        {% if show_main_label%}
+            <i class="{{main_label_icon}}"></i>&nbsp;&nbsp;&nbsp;&nbsp;<span class="h4">{{main_label}}</span>
+        {% endif %}
+    {% endif %}
+{% endblock %}
 
+{% block body %}
+    {% if boards|length < 1 %}
+        <div class="col-md-12">
+            <div class="row">
+                    <h3 class="h3" style="width: 100%; height: 50vh; display: flex; align-items: center; justify-content: center;">No boards found! </h3>
+            </div>
+        </div>
+    {% else %}
+        {% for board in boards %}
+            <div class="col-md-4 col-sm-6 mt-1 mb-1">
+                <div class="row board-contaner">
+                    <div class="board {% if loop.index%2 == 0 %} {{'even'}} {% else %} {{'odd'}} {% endif %}">
+                        <div class="board-body">
+                            <a class="{% if loop.index%2 == 0 %} {{'even-board-title'}} {% else %} {{'odd-board-title'}} {% endif %}" href="/boards/{{board.key.id()}}/{{loop.index}}"><h6 class="board-title" style="text-transform: capitalize;">{{board.title}}</h6></a>
+                            <div class="bar">
+                                <div class="emptybar"></div>
+                                <div class="filledbar"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% endif %}
 {% endblock %}

@@ -1,24 +1,29 @@
 {% extends '_base.html' %}
 
 {% block title %}
-    <title>Burello - Dashboard</title>
-
+    <title>Burello - Complete Registration</title>
 {% endblock %}
 
+{% block header_section %}
+    {% if user and completed_profile %}
+        {% if show_main_label%}
+            <i class="{{main_label_icon}}"></i>&nbsp;&nbsp;&nbsp;&nbsp;<span class="h4">{{main_label}}</span>
+        {% endif %}
+    {% endif %}
+{% endblock %}
 
 {% block body %}
-
-    <div class="container-flud">
+    <div class="container-fluid">
         <div class="row">
             <div class="col-md-8 offset-md-2">
                 <div class="row h5">
-                    <strong>Welcome {{ user.email() }}</strong>
+                    <strong>Welcome {{ user.email() }},</strong>
                     <p class="ml-2 mr-2 mt-2" style="text-align: center;">
-                        Burello provides you with a set of tools to organize and manage your tasks into task boards. To enable access, you are first required to complete registration by filling out the form below with the required information.
+                      Burello provides you with a set of tools to help organize and manage your tasks into task boards. To enable access, you are first required to complete registration by filling out the form below.
                     </p>
                 </div>
             </div>
-            <form action="/" method="POST" class="col-md-6 offset-md-3 border border-primary rounded">
+            <form action="/boards" method="POST" class="col-md-6 offset-md-3 border border-primary rounded">
                 <div class="row">
                     <h4 class="h4 d-flex justify-content-center mt-4 mb-2 text-secondary" style="width: 100%;">User Details</h4>
                 </div>

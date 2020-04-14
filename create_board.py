@@ -7,12 +7,7 @@ import json
 from google.appengine.api import users
 from google.appengine.ext import ndb
 from user import User
-from task import Task
 from board import Board
-
-from create_board import CreateBoardPage
-from board_page import SelectedBoardPage
-from home_redirect import RedirectHomeRoute
 
 start = os.path.dirname( __file__ )
 rel_path = os.path.join(start, 'templates')
@@ -24,7 +19,7 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     autoescape = True
 )
 
-class MainPage( webapp2.RequestHandler ):
+class CreateBoardPage( webapp2.RequestHandler ):
     def get( self ):
         self.response.headers[ 'Content-Type' ] = 'text/html'
 
@@ -81,8 +76,6 @@ class MainPage( webapp2.RequestHandler ):
             self.redirect( url )
             return
 
-        boards = self.getLoggedUserBoards(logged_user.boards)
-
         template_values = {
             'url': url,
             'logged_user': logged_user,
@@ -95,51 +88,48 @@ class MainPage( webapp2.RequestHandler ):
             'has_params': has_params,
             'params_key': params_key,
             'params_value': params_value,
-            'show_main_label': True,
-            'main_label': 'Personal Boards',
-            'main_label_icon': "far fa-user fa-2x",
-            'boards': boards
+            'show_main_label': False,
+            'main_label': '',
+            'main_label_icon': ""
         }
 
-        if user and (not has_completed_profile):
-            template = JINJA_ENVIRONMENT.get_template( 'pages/user_info.html' )
-            self.response.write( template.render( template_values ) )
-            return
-        else:
-            template = JINJA_ENVIRONMENT.get_template( 'pages/index.html' )
-            self.response.write( template.render( template_values ) )
-            return
-
+        template = JINJA_ENVIRONMENT.get_template( 'pages/create_board.html' )
+        self.response.write( template.render( template_values ) )
+        return
 
     def post( self ):
         self.response.headers[ 'Content-Type' ] = 'text/html'
         cta_button = self.request.get( 'button' )
+        user = users.get_current_user()
+        logged_user_key = ndb.Key( 'User', user.user_id() )
+        logged_user = logged_user_key.get()
 
-        if cta_button == "Save":
-            firstname = self.request.get( 'firstname' )
-            lastname = self.request.get( 'lastname' )
-            if firstname == '' or lastname == '':
-                message = "Firstname or lastname field CANNOT be empty"
-                query_string = "?failed=" + message + "&firstname=" + firstname + "&lastname=" + lastname
-                url = "/boards" + query_string
-                self.redirect( url )
-                return
-            else:
-                user = users.get_current_user()
-                logged_user_key = ndb.Key( 'User', user.user_id() )
-                logged_user = logged_user_key.get()
-                logged_user.firstname = firstname
-                logged_user.lastname = lastname
-                logged_user.initials = self.getLoggedUserInitials( firstname + ' ' + lastname )
-                logged_user.email = user.email()
+        if cta_button == 'Create Board':
+            board_title = self.request.get( 'board_title' )
+            created_by = str(logged_user.key.id())
+            created_at = str(datetime.datetime.now())
+
+            if board_title:
+                new_board = Board( title = board_title, created_by = created_by, created_at = created_at )
+                new_board.members.append( created_by )
+                board_key = new_board.put()
+
+                board = board_key.get()
+                logged_user.boards.append(str(board.key.id()))
                 logged_user.put()
-                message = "Thank you " + firstname.capitalize() + " " + lastname.capitalize() + " for updating your details."
-                query_string = "?success=" + message + "&firstname=" + firstname + "&lastname=" + lastname
-                url = "/boards" + query_string
+
+                if board and new_board.is_saved:
+                    message = board_title + " board was created successfully."
+                    query_string = "?success=" + message
+                    url = "/boards" + query_string
+                    self.redirect( url )
+                    return
+            else:
+                message = "Board name is required to create a new board"
+                query_string = "?failed=" + message
+                url = "/boards/create-board" + query_string
                 self.redirect( url )
                 return
-        else:
-            pass
 
 
     def getLoggedUserInitials( self, username ):
@@ -149,20 +139,3 @@ class MainPage( webapp2.RequestHandler ):
             return (name_list[0][0] + name_list[0][1]).upper()
         elif word_count > 1:
             return (name_list[0][0] + name_list[1][0]).upper()
-
-    def getLoggedUserBoards(self, board_keys):
-        logged_user_boards = []
-        for board_key in board_keys:
-            board = ndb.Key( 'Board', int(board_key) ).get()
-            logged_user_boards.append( board )
-
-        return logged_user_boards
-
-app = webapp2.WSGIApplication(
-    [
-        webapp2.Route( r'/boards/<board_key:[^/]+>/<board_index:[^/]+>', handler=SelectedBoardPage, name='selected-board'),
-        webapp2.Route( r'/boards', handler=MainPage, name='home'),
-        webapp2.Route( r'/boards/create-board', handler=CreateBoardPage, name='create-board'),
-        webapp2.Route( r'/', handler=RedirectHomeRoute, name='home-route-redirect'),
-    ], debug = True
-)

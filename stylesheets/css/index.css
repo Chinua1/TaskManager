@@ -102,20 +102,18 @@ header {
     box-shadow: -5px 0 10px #5c0101;;
 }
 
-.odd-backgroung {
+.odd-background {
     background-color: #17141d;
     color: #ffffff;
 }
 
-.even-backgroung {
+.even-background {
     background-color: rgb(88, 1, 1);
     color: #ffffff;
 }
 
 .board-title {
-    color: #ffffff;
     padding: 8px 0 0 16px;
-
     font-weight: 900;
 }
 
@@ -223,4 +221,50 @@ table.table {
     font-size: 0.6rem;
     line-height: 1.5;
     border-radius: 0.2rem;
+}
+
+.btn-primary {
+    color: #fff;
+    background-color: #026aa7;
+    border-color: #026aa7;
+}
+
+.btn-primary:hover {
+    color: #fff;
+    background-color: #026aa7;
+    border-color: #026aa7;
+}
+
+.btn-primary:focus, .btn-primary.focus {
+    color: #fff;
+    background-color: #026aa7;
+    border-color: #026aa7;
+    box-shadow: 0 0 0 0.2rem rgba(38, 143, 255, 0.5);
+}
+
+.btn-primary.disabled, .btn-primary:disabled {
+    color: #fff;
+    background-color: #026aa7;
+    border-color: #026aa7;
+}
+
+.btn-primary:not(:disabled):not(.disabled):active, .btn-primary:not(:disabled):not(.disabled).active,
+.show > .btn-primary.dropdown-toggle {
+    color: #fff;
+    background-color: #026aa7;
+    border-color: #026aa7;
+}
+
+.btn-primary:not(:disabled):not(.disabled):active:focus, .btn-primary:not(:disabled):not(.disabled).active:focus,
+.show > .btn-primary.dropdown-toggle:focus {
+    box-shadow: 0 0 0 0.2rem rgba(38, 143, 255, 0.5);
+}
+
+.odd-board-title, .even-board-title {
+    color: #ffffff !important;
+}
+
+.odd-board-title:hover, .even-board-title:hover {
+    text-decoration: none !important;
+    color: #026aa7 !important;
 }

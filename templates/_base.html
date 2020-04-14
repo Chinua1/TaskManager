@@ -7,17 +7,17 @@
         <link rel="stylesheet" href="/stylesheets/css/index.css">
         {% block title %}{% endblock %}
     </head>
-    <body>
+    <body class="{% if board_index %} {% if board_index%2 == 0 %} {{'even-background'}} {% else %} {{'odd-background'}} {% endif %} {% endif %}">
         <header class="container-fluid">
             <div class="row">
                 <div class="col-4 d-flex justify-content-start">
                     {% if user and completed_profile %}
-                        <a href="/" class="nav-icon home-icon"><i class="fas fa-home"></i></a>
-                        <a href="#" title="Create New Board" class="nav-icon add-project">+</a>
+                        <a href="/boards" class="nav-icon home-icon"><i class="fas fa-home"></i></a>
+                        <a href="/boards/create-board" title="Create New Board" class="nav-icon add-project">+</a>
                     {% endif %}
                 </div>
                 <div class="col-4 d-flex justify-content-center">
-                    <a href="/"  class="nav-icon app-logo">Burello</a>
+                    <a href="/boards"  class="nav-icon app-logo">Burello</a>
                 </div>
                 <div class="col-4 d-flex justify-content-end">
                     {% if user and completed_profile %}
@@ -28,14 +28,14 @@
             </div>
         </header>
         <main class="col-10 offset-1 mt-3">
-            <div class="row">
+            <div class="row mb-2">
                 {% if has_params %}
                     {% include '_error.html' %}
                 {% endif %}
                 <div class="col-12 mt-2 mb-1">
-                    {% if user and completed_profile %}
-                        <i class="far fa-user fa-2x"></i>&nbsp;&nbsp;&nbsp;&nbsp;<span class="h4">Personal Boards</span>
-                    {% endif %}
+                    <div class="row">
+                        {% block header_section %}{% endblock %}
+                    </div>
                 </div>
             </div>
             <div class="row">

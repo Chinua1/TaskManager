@@ -1,0 +1,95 @@
+{% extends '_base.html' %}
+
+{% block title %}
+    <title>Burello - Board View Page</title>
+{% endblock %}
+
+{% block header_section %}
+    <div class="col-9"><h6 class="board-title h3">{{board.title}}</h6></div>
+  <!--  <ul class="col-3 inline-list d-flex justify-content-end">
+        <li class="ml-3 mr-3">
+            <a href="/boards/{{board.key.id()}}/{{board_index}}/invite-member" title="Invite Member" class="btn btn-sm btn-transparent" style="font-size: 18px;">+&nbsp;<i class="far fa-user"></i></a>
+        </li>
+        <li class="mr-5">
+          <a href="/boards/{{board.key.id()}}/{{board_index}}/add-task" title="Add Task" class="btn btn-sm btn-transparent" style="font-size: 18px;">+&nbsp;<i class="fas fa-tasks"></i></a>
+        </li>
+    </ul> -->
+{% endblock %}
+
+{% block body %}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <ul class="row inline-list">
+                    <li class="list-tab">
+                        <a href="#">Board Members</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="col-12">
+                <ul class="row inline-list member-list">
+                    {% for member in board_members %}
+                        <li
+                            class="col-md-3 col-sm-6 li"
+                            title="{{member.firstname}} {{member.lastname}} ({{member.initials}})"
+                        >
+                            <div class="member-item d-flex justify-content-between">
+                                <span class="text-truncate">{{member.firstname}} {{member.lastname}}(<span class="abbrv-name">{{member.initials}}</span>)</span><a href="#" class="delete-user">x</a>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        <div class="row">
+           <div class="col-12">
+               <ul class="row inline-list">
+                   <li class="list-tab">
+                  <!--     <a href="#">Task List</a> -->
+                     </li>
+               </ul>
+           </div>
+           <div class="col-12">
+               <div class="row">
+                {% if board.tasks|length == 0 %}
+                    <div class="col-md-12">
+                        <div class="row">
+                            <!--    <h3 class="h6" style="width: 100%; height: 50vh; display: flex; align-items: center; justify-content: center;">No tasks found </h3> -->
+                        </div>
+                    </div>
+                {% else %}
+                    <table class="table table-hover table-dark">
+                        <thead>
+                            <tr>
+                                <th scope="col">
+                                    <input type="checkbox" checked>
+                                </th>
+                                <th scope="col">Title</th>
+                                <th scope="col">Due Date</th>
+                                <th scope="col">Assign To</th>
+                                <th scope="col">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for task in board.tasks %}
+                                <tr>
+                                    <th scope="row">
+                                        <input type="checkbox" checked/>
+                                    </th>
+                                    <td>Create todo list</td>
+                                    <td>20/03/2020</td>
+                                    <td>unassigned</td>
+                                    <td>
+                                        <a href="#" class="btn btn-sm btn-outline-warning">Edit</a>
+                                        <a href="#" class="btn btn-sm btn-outline-danger">Delete</a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% endif %}
+               </div>
+           </div>
+        </div>
+    </div>
+{% endblock %}

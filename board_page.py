@@ -4,15 +4,18 @@ import os
 import datetime
 import json
 
+from datetime import datetime as dt_convert
+from pytz import timezone
+import pytz
+import time
+
 from google.appengine.api import users
 from google.appengine.ext import ndb
 from user import User
-from task import Task
 from board import Board
 
 from create_board import CreateBoardPage
-from board_page import SelectedBoardPage
-from home_redirect import RedirectHomeRoute
+from datetime import datetime as str_datetime
 
 start = os.path.dirname( __file__ )
 rel_path = os.path.join(start, 'templates')
@@ -24,8 +27,8 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     autoescape = True
 )
 
-class MainPage( webapp2.RequestHandler ):
-    def get( self ):
+class SelectedBoardPage( webapp2.RequestHandler ):
+    def get( self, board_key, board_index ):
         self.response.headers[ 'Content-Type' ] = 'text/html'
 
         url = ''
@@ -81,7 +84,13 @@ class MainPage( webapp2.RequestHandler ):
             self.redirect( url )
             return
 
-        boards = self.getLoggedUserBoards(logged_user.boards)
+        board = ndb.Key( 'Board', int(board_key) ).get()
+
+        if not str(logged_user.key.id()) in board.members:
+            message = 'Access Denied. Your membership has been revoked.'
+            query_string = '?failed=' + message
+            url = '/boards' + query_string
+            self.redirect( url )
 
         template_values = {
             'url': url,
@@ -98,17 +107,23 @@ class MainPage( webapp2.RequestHandler ):
             'show_main_label': True,
             'main_label': 'Personal Boards',
             'main_label_icon': "far fa-user fa-2x",
-            'boards': boards
+            'board': board,
+            'board_members': self.getBoardMembers( User.query().fetch(), board.members ),
+            'board_index': int(board_index),
+            'members_json': json.dumps( [ dict(user.to_dict(), **dict(id=user.key.id())) for user in  User.query().fetch() ] ),
+            'member_ids': json.dumps( board.members ),
+            'active_task': self.getActiveTasksCount(board),
+            'completed_task': self.getCompletedTasksCount(board),
+            'today_completed_task': self.getTodayCompletedTasksCount(board),
+            'dublintz': timezone('Europe/Dublin'),
+            'utc': pytz.utc,
+            'dt_convert': dt_convert,
+            'time': time
         }
 
-        if user and (not has_completed_profile):
-            template = JINJA_ENVIRONMENT.get_template( 'pages/user_info.html' )
-            self.response.write( template.render( template_values ) )
-            return
-        else:
-            template = JINJA_ENVIRONMENT.get_template( 'pages/index.html' )
-            self.response.write( template.render( template_values ) )
-            return
+        template = JINJA_ENVIRONMENT.get_template( 'pages/board_page.html' )
+        self.response.write( template.render( template_values ) )
+        return
 
 
     def post( self ):
@@ -130,7 +145,6 @@ class MainPage( webapp2.RequestHandler ):
                 logged_user = logged_user_key.get()
                 logged_user.firstname = firstname
                 logged_user.lastname = lastname
-                logged_user.initials = self.getLoggedUserInitials( firstname + ' ' + lastname )
                 logged_user.email = user.email()
                 logged_user.put()
                 message = "Thank you " + firstname.capitalize() + " " + lastname.capitalize() + " for updating your details."
@@ -141,7 +155,6 @@ class MainPage( webapp2.RequestHandler ):
         else:
             pass
 
-
     def getLoggedUserInitials( self, username ):
         name_list = username.split(' ')
         word_count = len(name_list)
@@ -150,19 +163,39 @@ class MainPage( webapp2.RequestHandler ):
         elif word_count > 1:
             return (name_list[0][0] + name_list[1][0]).upper()
 
-    def getLoggedUserBoards(self, board_keys):
-        logged_user_boards = []
-        for board_key in board_keys:
-            board = ndb.Key( 'Board', int(board_key) ).get()
-            logged_user_boards.append( board )
+    def getBoardMembers( self, user_list, member_key_list ):
+        member_list = []
 
-        return logged_user_boards
+        for key in member_key_list:
+            for user in user_list:
+                if str(user.key.id()) == key:
+                    member_list.append( user )
 
-app = webapp2.WSGIApplication(
-    [
-        webapp2.Route( r'/boards/<board_key:[^/]+>/<board_index:[^/]+>', handler=SelectedBoardPage, name='selected-board'),
-        webapp2.Route( r'/boards', handler=MainPage, name='home'),
-        webapp2.Route( r'/boards/create-board', handler=CreateBoardPage, name='create-board'),
-        webapp2.Route( r'/', handler=RedirectHomeRoute, name='home-route-redirect'),
-    ], debug = True
-)
+        return member_list
+
+    def getActiveTasksCount(self, board):
+        active_task = 0
+        for task in board.tasks:
+            if task.completed:
+                pass
+            else:
+                active_task += 1
+
+        return active_task
+
+
+    def getCompletedTasksCount(self, board):
+        completed_task = 0
+        for task in board.tasks:
+            if task.completed:
+                completed_task += 1
+        return completed_task
+
+    def getTodayCompletedTasksCount(self, board):
+        tct = 0
+        today = datetime.datetime.now().strftime('%Y-%m-%d')
+        for task in board.tasks:
+            if task.completed_on:
+                if task.completed_on.strftime('%Y-%m-%d') == today:
+                    tct += 1
+        return tct
