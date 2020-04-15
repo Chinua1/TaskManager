@@ -4,18 +4,12 @@ import os
 import datetime
 import json
 
-from datetime import datetime as dt_convert
-from pytz import timezone
-import pytz
-import time
-
 from google.appengine.api import users
 from google.appengine.ext import ndb
 from user import User
 from board import Board
 
 from create_board import CreateBoardPage
-from datetime import datetime as str_datetime
 
 start = os.path.dirname( __file__ )
 rel_path = os.path.join(start, 'templates')
@@ -85,13 +79,6 @@ class SelectedBoardPage( webapp2.RequestHandler ):
             return
 
         board = ndb.Key( 'Board', int(board_key) ).get()
-
-        if not str(logged_user.key.id()) in board.members:
-            message = 'Access Denied. Your membership has been revoked.'
-            query_string = '?failed=' + message
-            url = '/boards' + query_string
-            self.redirect( url )
-
         template_values = {
             'url': url,
             'logged_user': logged_user,
@@ -111,14 +98,7 @@ class SelectedBoardPage( webapp2.RequestHandler ):
             'board_members': self.getBoardMembers( User.query().fetch(), board.members ),
             'board_index': int(board_index),
             'members_json': json.dumps( [ dict(user.to_dict(), **dict(id=user.key.id())) for user in  User.query().fetch() ] ),
-            'member_ids': json.dumps( board.members ),
-            'active_task': self.getActiveTasksCount(board),
-            'completed_task': self.getCompletedTasksCount(board),
-            'today_completed_task': self.getTodayCompletedTasksCount(board),
-            'dublintz': timezone('Europe/Dublin'),
-            'utc': pytz.utc,
-            'dt_convert': dt_convert,
-            'time': time
+            'member_ids': json.dumps( board.members )
         }
 
         template = JINJA_ENVIRONMENT.get_template( 'pages/board_page.html' )
@@ -172,30 +152,3 @@ class SelectedBoardPage( webapp2.RequestHandler ):
                     member_list.append( user )
 
         return member_list
-
-    def getActiveTasksCount(self, board):
-        active_task = 0
-        for task in board.tasks:
-            if task.completed:
-                pass
-            else:
-                active_task += 1
-
-        return active_task
-
-
-    def getCompletedTasksCount(self, board):
-        completed_task = 0
-        for task in board.tasks:
-            if task.completed:
-                completed_task += 1
-        return completed_task
-
-    def getTodayCompletedTasksCount(self, board):
-        tct = 0
-        today = datetime.datetime.now().strftime('%Y-%m-%d')
-        for task in board.tasks:
-            if task.completed_on:
-                if task.completed_on.strftime('%Y-%m-%d') == today:
-                    tct += 1
-        return tct

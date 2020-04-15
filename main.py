@@ -13,6 +13,9 @@ from board import Board
 from create_board import CreateBoardPage
 from board_page import SelectedBoardPage
 from home_redirect import RedirectHomeRoute
+from invite_member import InviteMemberPage
+from add_task import AddTaskPage
+from services import TaskUpdateRequestProcess
 
 start = os.path.dirname( __file__ )
 rel_path = os.path.join(start, 'templates')
@@ -98,7 +101,9 @@ class MainPage( webapp2.RequestHandler ):
             'show_main_label': True,
             'main_label': 'Personal Boards',
             'main_label_icon': "far fa-user fa-2x",
-            'boards': boards
+            'boards': boards,
+            'members_json': json.dumps( [] ),
+            'member_ids': json.dumps( [] )
         }
 
         if user and (not has_completed_profile):
@@ -160,6 +165,9 @@ class MainPage( webapp2.RequestHandler ):
 
 app = webapp2.WSGIApplication(
     [
+        webapp2.Route( r'/boards/<board_key:[^/]+>/task-update-request', handler=TaskUpdateRequestProcess, name='task-request-services'),
+        webapp2.Route( r'/boards/<board_key:[^/]+>/<board_index:[^/]+>/invite-member', handler=InviteMemberPage, name='invite-member'),
+        webapp2.Route( r'/boards/<board_key:[^/]+>/<board_index:[^/]+>/add-task', handler=AddTaskPage, name='add-task'),
         webapp2.Route( r'/boards/<board_key:[^/]+>/<board_index:[^/]+>', handler=SelectedBoardPage, name='selected-board'),
         webapp2.Route( r'/boards', handler=MainPage, name='home'),
         webapp2.Route( r'/boards/create-board', handler=CreateBoardPage, name='create-board'),

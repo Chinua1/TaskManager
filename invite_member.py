@@ -7,6 +7,7 @@ import json
 from google.appengine.api import users
 from google.appengine.ext import ndb
 from user import User
+from task import Task
 from board import Board
 
 start = os.path.dirname( __file__ )
@@ -19,8 +20,8 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     autoescape = True
 )
 
-class CreateBoardPage( webapp2.RequestHandler ):
-    def get( self ):
+class InviteMemberPage( webapp2.RequestHandler ):
+    def get( self, board_key, board_index):
         self.response.headers[ 'Content-Type' ] = 'text/html'
 
         url = ''
@@ -88,51 +89,52 @@ class CreateBoardPage( webapp2.RequestHandler ):
             'has_params': has_params,
             'params_key': params_key,
             'params_value': params_value,
-            'show_main_label': False,
-            'main_label': '',
-            'main_label_icon': "",
+            'show_main_label': True,
+            'main_label': 'Invite Member',
+            'main_label_icon': "fas fa-user-plus fa-2x",
+            'board_key': board_key,
+            'users': User.query().fetch(),
+            'board_index': int(board_index),
             'members_json': json.dumps( [] ),
             'member_ids': json.dumps( [] )
         }
 
-        template = JINJA_ENVIRONMENT.get_template( 'pages/create_board.html' )
+        template = JINJA_ENVIRONMENT.get_template( 'pages/invite_member.html' )
         self.response.write( template.render( template_values ) )
         return
 
-    def post( self ):
+
+    def post( self, board_key, board_index ):
         self.response.headers[ 'Content-Type' ] = 'text/html'
-        cta_button = self.request.get( 'button' )
-        user = users.get_current_user()
-        logged_user_key = ndb.Key( 'User', user.user_id() )
-        logged_user = logged_user_key.get()
+        message = ""
+        query_string = ""
+        url = ""
 
-        if cta_button == 'Create Board':
-            board_title = self.request.get( 'board_title' )
-            created_by = str(logged_user.key.id())
-            created_at = str(datetime.datetime.now())
+        member_key = self.request.get('member_key')
 
-            if board_title:
-                new_board = Board( title = board_title, created_by = created_by, created_at = created_at )
-                new_board.members.append( created_by )
-                board_key = new_board.put()
-
-                board = board_key.get()
-                logged_user.boards.append(str(board.key.id()))
-                logged_user.put()
-
-                if board:
-                    message = board_title + " Board was created successfully."
-                    query_string = "?success=" + message
-                    url = "/boards" + query_string
-                    self.redirect( url )
-                    return
+        if member_key == "":
+            message = "Choose a member to add from the dropdown list"
+            query_string = "?failed=" + message
+            url = '/boards/' + board_key + '/' + board_index + '/invite-member' + query_string
+            self.redirect( url )
+            return
+        else:
+            board = ndb.Key( 'Board', int(board_key) ).get()
+            if member_key in board.members:
+                pass
             else:
-                message = "Board name is required to create a new board"
-                query_string = "?failed=" + message
-                url = "/boards/create-board" + query_string
-                self.redirect( url )
-                return
+                board.members.append(member_key)
+                board.put()
+                member = self.getProspectiveMember(User.query().fetch(), member_key)
+                member.boards.append(str(board.key.id()))
+                member.put()
+                message = "Member was successfully added."
+                query_string = "?success=" + message
 
+            url = '/boards/' + board_key + '/' + board_index + query_string
+
+        self.redirect( url )
+        return
 
     def getLoggedUserInitials( self, username ):
         name_list = username.split(' ')
@@ -141,3 +143,10 @@ class CreateBoardPage( webapp2.RequestHandler ):
             return (name_list[0][0] + name_list[0][1]).upper()
         elif word_count > 1:
             return (name_list[0][0] + name_list[1][0]).upper()
+
+    def getProspectiveMember(self, user_list, member_key):
+        member = None
+        for user in user_list:
+            if str(user.key.id()) == member_key:
+                member = user
+        return member

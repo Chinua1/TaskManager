@@ -22,12 +22,14 @@
                 <div class="col-4 d-flex justify-content-end">
                     {% if user and completed_profile %}
                         <a href="#" title="{{ username }}" class="nav-icon user-icon">{{ initials }}</a>
+                        <a href="{{ url }}" title="Logout" class="nav-icon logout"><i class="fas fa-sign-out-alt"></i></a>
                     {% endif %}
-                    <a href="{{ url }}" title="Logout" class="nav-icon logout"><i class="fas fa-sign-out-alt"></i></a>
                 </div>
             </div>
         </header>
         <main class="col-10 offset-1 mt-3">
+            <input type="hidden" id="user_json" name="user_json" value="{{members_json}}">
+            <input type="hidden" id="member_ids" name="member_ids" value="{{member_ids}}">
             <div class="row mb-2">
                 {% if has_params %}
                     {% include '_error.html' %}
@@ -47,8 +49,110 @@
             </div>
         </main>
         <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+        <script src="https://code.jquery.com/jquery-3.4.1.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
         <script src="https://kit.fontawesome.com/211480a66b.js" crossorigin="anonymous"></script>
+        <script>
+            const users = JSON.parse( document.getElementById('user_json').value );
+            const member_ids = JSON.parse( document.getElementById('member_ids').value );
+            `{% if board %}`
+            const board_key = '{{board.key.id()}}';
+            `{% endif %}`
+            const board_index = parseInt('{{board_index}}', 10);
+
+            function assignTasktoBoardMember(e) {
+                    let parentNode = undefined;
+                    if (e.target.tagName == "I") {
+                        parentNode = e.target.parentNode.parentNode;
+                        if (parentNode.tagName === 'SPAN') {
+                            parentNode = e.target.parentNode.parentNode.parentNode;
+                        }
+                    } else if (e.target.tagName == "A") {
+                        parentNode = e.target.parentNode;
+                        if (parentNode.tagName === 'SPAN') {
+                            parentNode = e.target.parentNode.parentNode.parentNode;
+                        }
+                    }
+                    parentNode.innerHTML = generateBoardMemberSelector();
+            }
+
+            function generateBoardMemberSelector() {
+                return `
+                    <select class="form-control" id="board_members" name="board_members" onchange="updateTaskAssignTo(event)">
+                        <option value="" hidded selected>Select Member</option>
+                        ${getSelectOptions()}
+                    </select>
+                `;
+            }
+
+            function getSelectOptions() {
+                const members = getBoardMembers(users, member_ids);
+                let options = '';
+                for (let i=0; i<members.length; i++) {
+                    options += `<option value="${members[i].id}">${members[i].firstname} ${members[i].lastname} (${members[i].initials})</option>`;
+                }
+                return options;
+            }
+
+            function updateTaskAssignTo(e) {
+                const parentNode = e.target.parentNode;
+                let text = e.target.selectedOptions[0].text;
+                const data = {};
+                data.member_key = e.target.selectedOptions[0].value;
+                data.board_key = board_key;
+                data.task_index = parentNode.getAttribute("data-task-index");
+                data.cta_action = 'update-task-assignment';
+                let url = '/boards/' + board_key + '/task-update-request';
+
+                $.ajax({
+                    type: 'POST',
+                    url: url,
+                    contentType: 'application/json',
+                    data: data,
+                    dataType: 'json',
+                    success: function(data){
+                        console.log('recieving', data);
+                        if ( data ) {
+                            console.log('recieved', data);
+                            if (e.target.selectedOptions[0].value) {
+                                console.log('applied', data);
+                                parentNode.innerHTML = `<span title="${text}" class="text-truncate">${text}</span>
+                                <span>
+                                    <a onclick="assignTasktoBoardMember(event)" href="#" class="badge badge-primary badge-pill"><i class="fas fa-user-edit"></i></a>
+                                    <a href="#" class="badge badge-danger badge-pill"><i class="fas fa-trash"></i></a>
+                                </span>`;
+                            } else {
+                                parentNode.innerHTML = ` ---
+                                <a onclick="assignTasktoBoardMember(event)" href="#" class="badge badge-primary badge-pill"><i class="fas fa-user-edit"></i></a>`;
+                            }
+                        }
+                    },
+                    error: function(data, textStatus, errorThrown) {
+                        console.log(data);
+                    }
+                });
+            }
+
+            function getBoardMembers(users, ids) {
+                const members = [];
+                let tempMember = null;
+                ids.map( (id)=>{
+                    isAMember = false;
+                    for (let i=0; i<users.length; i++) {
+                        if (users[i].id === id) {
+                            isAMember = true;
+                            tempMember = users[i];
+                            break;
+                        }
+                    }
+                    if (isAMember && tempMember) {
+                        members.push(tempMember);
+                        tempMember = null;
+                    }
+                });
+                return members;
+            }
+        </script>
     </body>
 </html>

@@ -268,3 +268,7 @@ table.table {
     text-decoration: none !important;
     color: #026aa7 !important;
 }
+
+.initials-bold {
+    font-weight: 900 !important;
+}
