@@ -8,4 +8,5 @@ class Task( ndb.Model ):
     assigned_to = ndb.StringProperty()
     created_at = ndb.DateProperty()
     completed_on = ndb.DateTimeProperty()
+    high_lighted = ndb.BooleanProperty()
     description = ndb.StringProperty()

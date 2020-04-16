@@ -14,6 +14,10 @@ from board import Board
 class TaskUpdateRequestProcess( webapp2.RequestHandler ):
     def post( self, board_key ):
         self.response.headers[ 'Content-Type' ] = 'application/json'
+        user = users.get_current_user()
+        logged_user_key = ndb.Key( 'User', user.user_id() )
+        logged_user = logged_user_key.get()
+
         request_data = self.request.body
         data_list = request_data.split('&')
         cta_action = data_list[len(data_list)-1].split('=')[1]
@@ -24,7 +28,15 @@ class TaskUpdateRequestProcess( webapp2.RequestHandler ):
             board_index = data_list[3].split('=')[1]
             board = ndb.Key('Board', int(board_key)).get()
 
+            if not str(logged_user.key.id()) in board.members:
+                message = 'Access Denied. Your membership has been revoked.'
+                query_string = '?failed=' + message
+                url = '/boards' + query_string
+                self.response.write( json.dumps( {"url": url } ) )
+                return
+
             board.tasks[task_index].assigned_to = member_key
+            board.tasks[task_index].high_lighted = False
             board.put()
             self.response.write( json.dumps( {"url": '/boards/' + board_key + '/' + board_index } ) )
             return
@@ -33,6 +45,14 @@ class TaskUpdateRequestProcess( webapp2.RequestHandler ):
             task_index = int(data_list[2].split('=')[1])
             board_index = data_list[3].split('=')[1]
             board = ndb.Key('Board', int(board_key)).get()
+
+            if not str(logged_user.key.id()) in board.members:
+                message = 'Access Denied. Your membership has been revoked.'
+                query_string = '?failed=' + message
+                url = '/boards' + query_string
+                self.response.write( json.dumps( {"url": url } ) )
+                return
+
             board.tasks[task_index].completed = completed
             response_dict = {}
             if completed:

@@ -23,7 +23,7 @@
                     {% if user and completed_profile %}
                         <a href="#" title="{{ username }}" class="nav-icon user-icon">{{ initials }}</a>
                     {% endif %}
-                    <a href="{{ url }}" title="Logout" class="nav-icon logout"><i class="fas fa-sign-out-alt"></i></a>
+                        <a href="{{ url }}" title="Logout" class="nav-icon logout"><i class="fas fa-sign-out-alt"></i></a>
                 </div>
             </div>
         </header>
@@ -113,6 +113,7 @@
                     data: data,
                     dataType: 'json',
                     success: function(data){
+                        console.log('recieving', data);
                         if ( data.url ) {
                             location.replace(data.url);
                         }

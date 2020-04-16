@@ -1,0 +1,27 @@
+{% extends '_base.html' %}
+
+{% block title %}
+    <title>Burello - Create Board</title>
+{% endblock %}
+
+{% block body %}
+    <div class="container-fluid">
+        <div class="row">
+            <form action="/boards/{{board.key.id()}}/{{board_index}}/edit-board-name" method="POST" class="col-md-6 offset-md-3">
+                <div class="row">
+                    <h4 class="h4 d-flex justify-content-center mt-4 mb-2 text-secondary" style="width: 100%;">Edit Board Name</h4>
+                </div>
+                <div class="form-row ml-3 mr-3 mt-3">
+                    <div class="form-group col-md-12">
+                        <input style="text-align: center;" value="{{board.title}}" type="text" class="form-control" id="board_title" name="board_title" placeholder="Enter Board Title">
+                    </div>
+                </div>
+                <div class="form-row mb-5 mt-3">
+                    <div class="form-group col-md-6 offset-md-3">
+                        <input type="submit" class="btn btn-block btn-primary" name="button" value="Update Board Name">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

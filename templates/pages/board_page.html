@@ -5,7 +5,10 @@
 {% endblock %}
 
 {% block header_section %}
-    <div class="col-9"><h6 class="board-title h3">{{board.title}}</h6></div>
+    <div class="col-9">
+        <span class="board-title h3">{{board.title}}</span>
+        <a href="/boards/{{board.key.id()}}/{{board_index}}/edit-board-name" class="btn btn-m btn-outline-warning ml-4">Edit</a>
+    </div>
     <ul class="col-3 inline-list d-flex justify-content-end">
         {% if board.created_by == logged_user.key.id()|string %}
         <li class="ml-3 mr-3">
@@ -36,7 +39,10 @@
                             title="{{member.firstname}} {{member.lastname}} ({{member.initials}})"
                         >
                             <div class="member-item d-flex justify-content-between">
-                                <span class="text-truncate">{{member.firstname}} {{member.lastname}}(<span class="abbrv-name">{{member.initials}}</span>)</span><a href="#" class="delete-user">x</a>
+                                <span class="text-truncate">{{member.firstname}} {{member.lastname}}(<span class="abbrv-name">{{member.initials}}</span>)</span>
+                                {% if not board.created_by == member.key.id()|string and board.created_by == logged_user.key.id()|string %}
+                                    <a href="/boards/{{board.key.id()}}/{{board_index}}/{{member.key.id()}}/remove-board-member" class="delete-user">x</a>
+                                {% endif %}
                             </div>
                         </li>
                     {% endfor %}
@@ -80,11 +86,10 @@
                                     <th scope="row" style="width: 60px;">
                                         <input type="checkbox" data-task-index="{{task_index}}" onclick="updateTaskCompletedStatus(event)" {% if task.completed %} checked {% endif %}/>
                                     </th>
-                                    <td>
+                                    <td class="{% if task.high_lighted %} text-danger {% endif %}">
                                         {{task.title}}
                                         {% if task.completed %}
-
-                                        <br /><small>Completed On <strong>{{task.completed_on.strftime('%b %d %Y')}}</strong> at {{ utc.localize(dt_convert.utcfromtimestamp(time.mktime(task.completed_on.timetuple()))).astimezone(dublintz).strftime('%H:%M:%S') }}</small>
+                                            <br /><small>Completed On <strong>{{task.completed_on.strftime('%b %d %Y')}}</strong> at {{ utc.localize(dt_convert.utcfromtimestamp(time.mktime(task.completed_on.timetuple()))).astimezone(dublintz).strftime('%H:%M:%S') }}</small>
                                         {% endif %}
                                     </td>
                                     <td style="width: 150px;">{{task.due_date}}</td>

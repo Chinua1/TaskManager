@@ -84,6 +84,13 @@ class SelectedBoardPage( webapp2.RequestHandler ):
             return
 
         board = ndb.Key( 'Board', int(board_key) ).get()
+
+        if not str(logged_user.key.id()) in board.members:
+            message = 'Access Denied. Your membership has been revoked.'
+            query_string = '?failed=' + message
+            url = '/boards' + query_string
+            self.redirect( url )
+
         template_values = {
             'url': url,
             'logged_user': logged_user,

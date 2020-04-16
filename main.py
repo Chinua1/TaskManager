@@ -19,6 +19,8 @@ from services import TaskUpdateRequestProcess
 from delete_task import DeleteTaskFromTaskBoard
 from edit_task import EditTaskOnTaskBoard
 from unassign_task import UnassignTaskInTaskBoard
+from remove_board_member import RemoveMemberFromTaskBoard
+from edit_board_name import EditBoardNamePage
 
 start = os.path.dirname( __file__ )
 rel_path = os.path.join(start, 'templates')
@@ -168,12 +170,14 @@ class MainPage( webapp2.RequestHandler ):
 
 app = webapp2.WSGIApplication(
     [
+        webapp2.Route( r'/boards/<board_key:[^/]+>/<board_index:[^/]+>/<member_key:[^/]+>/remove-board-member', handler=RemoveMemberFromTaskBoard, name='remove-board-member'),
         webapp2.Route( r'/boards/<board_key:[^/]+>/<board_index:[^/]+>/<task_index:[^/]+>/delete-task', handler=DeleteTaskFromTaskBoard, name='delete-task'),
         webapp2.Route( r'/boards/<board_key:[^/]+>/<board_index:[^/]+>/<task_index:[^/]+>/edit-task', handler=EditTaskOnTaskBoard, name='edit-task'),
         webapp2.Route( r'/boards/<board_key:[^/]+>/<board_index:[^/]+>/<task_index:[^/]+>/unassign-task', handler=UnassignTaskInTaskBoard, name='unassign-task'),
         webapp2.Route( r'/boards/<board_key:[^/]+>/task-update-request', handler=TaskUpdateRequestProcess, name='task-request-services'),
         webapp2.Route( r'/boards/<board_key:[^/]+>/<board_index:[^/]+>/invite-member', handler=InviteMemberPage, name='invite-member'),
         webapp2.Route( r'/boards/<board_key:[^/]+>/<board_index:[^/]+>/add-task', handler=AddTaskPage, name='add-task'),
+        webapp2.Route( r'/boards/<board_key:[^/]+>/<board_index:[^/]+>/edit-board-name', handler=EditBoardNamePage, name='edit-board-name'),
         webapp2.Route( r'/boards/<board_key:[^/]+>/<board_index:[^/]+>', handler=SelectedBoardPage, name='selected-board'),
         webapp2.Route( r'/boards', handler=MainPage, name='home'),
         webapp2.Route( r'/boards/create-board', handler=CreateBoardPage, name='create-board'),

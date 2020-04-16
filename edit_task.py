@@ -77,7 +77,15 @@ class EditTaskOnTaskBoard( webapp2.RequestHandler ):
             url = users.create_login_url( self.request.uri )
             self.redirect( url )
             return
+
         board = ndb.Key('Board', int(board_key)).get()
+
+        if not str(logged_user.key.id()) in board.members:
+            message = 'Access Denied. Your membership has been revoked.'
+            query_string = '?failed=' + message
+            url = '/boards' + query_string
+            self.redirect( url )
+
         template_values = {
             'url': url,
             'logged_user': logged_user,
@@ -117,7 +125,7 @@ class EditTaskOnTaskBoard( webapp2.RequestHandler ):
             if task_title == '' or due_date == '':
                 message = "Task title and Due date fields must be completed to proceed"
                 query_string = "?failed=" + message + "&task_title=" + task_title + "&due_date=" + due_date
-                url = "/boards/" + board_key + "/" + board_index + "/"  + task_index + "/edit-task" + query_string
+                url = "/boards/" + board_key + "/" + board_index + "/" + task_index + "/edit-task" + query_string
                 self.redirect( url )
                 return
             else:
@@ -132,7 +140,6 @@ class EditTaskOnTaskBoard( webapp2.RequestHandler ):
                 url = "/boards/" + board_key + "/" + board_index
                 self.redirect( url )
                 return
-
 
     def getLoggedUserInitials( self, username ):
         name_list = username.split(' ')
