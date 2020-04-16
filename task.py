@@ -7,4 +7,5 @@ class Task( ndb.Model ):
     created_by = ndb.StringProperty()
     assigned_to = ndb.StringProperty()
     created_at = ndb.DateProperty()
+    completed_on = ndb.DateTimeProperty()
     description = ndb.StringProperty()

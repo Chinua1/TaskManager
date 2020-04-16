@@ -272,3 +272,7 @@ table.table {
 .initials-bold {
     font-weight: 900 !important;
 }
+
+button.badge {
+    border: none !important;
+}

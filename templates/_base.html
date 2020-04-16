@@ -22,8 +22,8 @@
                 <div class="col-4 d-flex justify-content-end">
                     {% if user and completed_profile %}
                         <a href="#" title="{{ username }}" class="nav-icon user-icon">{{ initials }}</a>
-                        <a href="{{ url }}" title="Logout" class="nav-icon logout"><i class="fas fa-sign-out-alt"></i></a>
                     {% endif %}
+                    <a href="{{ url }}" title="Logout" class="nav-icon logout"><i class="fas fa-sign-out-alt"></i></a>
                 </div>
             </div>
         </header>
@@ -114,17 +114,16 @@
                     success: function(data){
                         console.log('recieving', data);
                         if ( data ) {
-                            console.log('recieved', data);
                             if (e.target.selectedOptions[0].value) {
-                                console.log('applied', data);
+                                let unassignedUrl = `/boards/${board_key}/${board_index}/${parentNode.getAttribute("data-task-index")}/unassign-task`;
                                 parentNode.innerHTML = `<span title="${text}" class="text-truncate">${text}</span>
                                 <span>
-                                    <a onclick="assignTasktoBoardMember(event)" href="#" class="badge badge-primary badge-pill"><i class="fas fa-user-edit"></i></a>
-                                    <a href="#" class="badge badge-danger badge-pill"><i class="fas fa-trash"></i></a>
+                                    <button onclick="assignTasktoBoardMember(event)" class="badge badge-primary badge-pill"><i class="fas fa-user-edit"></i></button>
+                                    <a href="${unassignedUrl}" class="badge badge-danger badge-pill"><i class="fas fa-trash"></i></a>
                                 </span>`;
                             } else {
                                 parentNode.innerHTML = ` ---
-                                <a onclick="assignTasktoBoardMember(event)" href="#" class="badge badge-primary badge-pill"><i class="fas fa-user-edit"></i></a>`;
+                                <button onclick="assignTasktoBoardMember(event)" class="badge badge-primary badge-pill"><i class="fas fa-user-edit"></i></button>`;
                             }
                         }
                     },
@@ -152,6 +151,58 @@
                     }
                 });
                 return members;
+            }
+
+            function updateTaskCompletedStatus(e) {
+                const parentNode = e.target.parentNode.parentNode;
+                const data = {};
+                data.task_completed = e.target.checked;
+                data.board_key = board_key;
+                data.task_index = e.target.getAttribute("data-task-index");
+                data.cta_action = 'update-task-completed';
+                let url = '/boards/' + board_key + '/task-update-request';
+
+                $.ajax({
+                    type: 'POST',
+                    url: url,
+                    contentType: 'application/json',
+                    data: data,
+                    dataType: 'json',
+                    success: function(data){
+                        console.log('recieving', data);
+                        if ( data ) {
+                            const targetRowElements = parentNode.children;
+                            if (data.completed) {
+                                const node = getComptedOnTimeDateChildNode(data.completed_on);
+                                targetRowElements[1].innerHTML = data.task_title + node;
+                            } else {
+                                targetRowElements[1].innerHTML = data.task_title;
+                            }
+                        }
+                    },
+                    error: function(data, textStatus, errorThrown) {
+                        console.log(data);
+                    }
+                });
+            }
+
+            function getComptedOnTimeDateChildNode(timestamp) {
+                const unix_timestamp = parseInt(timestamp, 10);
+                const dateTime = new Date(unix_timestamp * 1000);
+
+                const year = dateTime.getFullYear();
+                const month = dateTime.getMonth()+1 < 10 ? `0${dateTime.getMonth()+1}` : dateTime.getMonth()+1;
+                const day = dateTime.getDate() < 10 ? `0${dateTime.getDate()}` : dateTime.getDate();
+
+                const hours = dateTime.getHours() < 10 ? `0${dateTime.getHours()}` : dateTime.getHours();
+                const minutes = dateTime.getMinutes() < 10 ? `0${dateTime.getMinutes()}` : dateTime.getMinutes();
+                const seconds = dateTime.getSeconds() < 10 ? `0${dateTime.getSeconds()}` : dateTime.getSeconds();
+
+                const setDate = `${year}-${month}-${day}`;
+                const setTime = `${hours}:${minutes}:${seconds}`;
+                return `
+                    <br /><small>Completed On <strong>${setDate}</strong> ${setTime}</small>
+                `;
             }
         </script>
     </body>

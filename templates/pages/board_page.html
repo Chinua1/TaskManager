@@ -8,9 +8,9 @@
     <div class="col-9"><h6 class="board-title h3">{{board.title}}</h6></div>
     <ul class="col-3 inline-list d-flex justify-content-end">
         {% if board.created_by == logged_user.key.id()|string %}
-            <li class="ml-3 mr-3">
-                <a href="/boards/{{board.key.id()}}/{{board_index}}/invite-member" title="Invite Member" class="btn btn-sm btn-transparent" style="font-size: 18px;">+&nbsp;<i class="far fa-user"></i></a>
-            </li>
+        <li class="ml-3 mr-3">
+            <a href="/boards/{{board.key.id()}}/{{board_index}}/invite-member" title="Invite Member" class="btn btn-sm btn-transparent" style="font-size: 18px;">+&nbsp;<i class="far fa-user"></i></a>
+        </li>
         {% endif %}
         <li class="mr-5">
             <a href="/boards/{{board.key.id()}}/{{board_index}}/add-task" title="Add Task" class="btn btn-sm btn-transparent" style="font-size: 18px;">+&nbsp;<i class="fas fa-tasks"></i></a>
@@ -56,7 +56,7 @@
                 {% if board.tasks|length == 0 %}
                     <div class="col-md-12">
                         <div class="row">
-                                <h3 class="h6" style="width: 100%; height: 50vh; display: flex; align-items: center; justify-content: center;">No task found! </h3>
+                                <h3 class="h6" style="width: 100%; height: 50vh; display: flex; align-items: center; justify-content: center;">No tasks found! </h3>
                         </div>
                     </div>
                 {% else %}
@@ -69,22 +69,29 @@
                                 </th>
                                 <th scope="col">Title</th>
                                 <th scope="col">Due Date</th>
-                                <th scope="col">Assign To</th>
-                                <th scope="col"></th>
+                                <th scope="col">Assigned To</th>
+                                <th scope="col">Member Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for task in board.tasks %}
+                            {% set task_index = loop.index-1 %}
                                 <tr>
                                     <th scope="row" style="width: 60px;">
-                                        <input type="checkbox" {% if task.completed %} checked {% endif %}/>
+                                        <input type="checkbox" data-task-index="{{loop.index}}" onclick="updateTaskCompletedStatus(event)" {% if task.completed %} checked {% endif %}/>
                                     </th>
-                                    <td>{{task.title}}</td>
+                                    <td>
+                                        {{task.title}}
+                                        {% if task.completed %}
+
+                                            <br /><small>Completed On <strong>{{task.completed_on.strftime('%b %d %Y')}}</strong> at {{ utc.localize(dt_convert.utcfromtimestamp(time.mktime(task.completed_on.timetuple()))).astimezone(dublintz).strftime('%H:%M:%S') }}</small>
+                                        {% endif %}
+                                    </td>
                                     <td style="width: 150px;">{{task.due_date}}</td>
                                     <td style="width: 250px;">
                                         <div class="d-flex justify-content-between align-items-center" data-task-index="{{loop.index}}">
                                             {% if task.assigned_to %}
-                                                {% for member in board_members %}
+                                                {% for member in board_members %}                                
                                                     {% if task.assigned_to == member.key.id()|string %}
                                                         <span
                                                             title="{{member.firstname}} {{member.lastname}} ({{member.initials}})"
@@ -93,20 +100,40 @@
                                                             {{member.firstname}} {{member.lastname}} ({{member.initials}})
                                                         </span>
                                                         <span>
-                                                            <a onclick="assignTasktoBoardMember(event)" href="#" class="badge badge-primary badge-pill"><i class="fas fa-user-edit"></i></a>
-                                                            <a href="#" class="badge badge-danger badge-pill"><i class="fas fa-trash"></i></a>
+                                                            <button
+                                                                onclick="assignTasktoBoardMember(event)"
+                                                                class="badge badge-primary badge-pill"
+                                                            >
+                                                                <i class="fas fa-user-edit"></i>
+                                                            </button>
+                                                            <a
+                                                                href="/boards/{{board.key.id()}}/{{board_index}}/{{task_index}}/unassign-task"
+                                                                class="badge badge-danger badge-pill"
+                                                            >
+                                                                <i class="fas fa-trash"></i>
+                                                            </a>
                                                         </span>
                                                     {% endif %}
                                                 {% endfor %}
                                             {% else %}
                                                 ---
-                                                <a onclick="assignTasktoBoardMember(event)" href="#" class="badge badge-primary badge-pill"><i class="fas fa-user-edit"></i></a>
+                                                <button onclick="assignTasktoBoardMember(event)" class="badge badge-primary badge-pill"><i class="fas fa-user-edit"></i></button>
                                             {% endif %}
                                         </div>
                                     </td>
                                     <td style="width: 200px; text-align: center;">
-                                  <!--      <a href="#" class="btn btn-sm btn-outline-warning">Edit</a>
-                                        <a href="#" class="btn btn-sm btn-outline-danger">Delete</a> -->
+                                        <a
+                                            href="/boards/{{board.key.id()}}/{{board_index}}/{{task_index}}/edit-task"
+                                            class="btn btn-sm btn-outline-warning"
+                                        >
+                                            Edit
+                                        </a>
+                                        <a
+                                            href="/boards/{{board.key.id()}}/{{board_index}}/{{task_index}}/delete-task"
+                                            class="btn btn-sm btn-outline-danger"
+                                        >
+                                            Delete
+                                        </a>
                                     </td>
                                 </tr>
                             {% endfor %}

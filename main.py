@@ -16,6 +16,9 @@ from home_redirect import RedirectHomeRoute
 from invite_member import InviteMemberPage
 from add_task import AddTaskPage
 from services import TaskUpdateRequestProcess
+from delete_task import DeleteTaskFromTaskBoard
+from edit_task import EditTaskOnTaskBoard
+from unassign_task import UnassignTaskInTaskBoard
 
 start = os.path.dirname( __file__ )
 rel_path = os.path.join(start, 'templates')
@@ -165,6 +168,9 @@ class MainPage( webapp2.RequestHandler ):
 
 app = webapp2.WSGIApplication(
     [
+        webapp2.Route( r'/boards/<board_key:[^/]+>/<board_index:[^/]+>/<task_index:[^/]+>/delete-task', handler=DeleteTaskFromTaskBoard, name='delete-task'),
+        webapp2.Route( r'/boards/<board_key:[^/]+>/<board_index:[^/]+>/<task_index:[^/]+>/edit-task', handler=EditTaskOnTaskBoard, name='edit-task'),
+        webapp2.Route( r'/boards/<board_key:[^/]+>/<board_index:[^/]+>/<task_index:[^/]+>/unassign-task', handler=UnassignTaskInTaskBoard, name='unassign-task'),
         webapp2.Route( r'/boards/<board_key:[^/]+>/task-update-request', handler=TaskUpdateRequestProcess, name='task-request-services'),
         webapp2.Route( r'/boards/<board_key:[^/]+>/<board_index:[^/]+>/invite-member', handler=InviteMemberPage, name='invite-member'),
         webapp2.Route( r'/boards/<board_key:[^/]+>/<board_index:[^/]+>/add-task', handler=AddTaskPage, name='add-task'),
