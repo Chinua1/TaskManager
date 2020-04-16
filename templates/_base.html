@@ -102,6 +102,7 @@
                 data.member_key = e.target.selectedOptions[0].value;
                 data.board_key = board_key;
                 data.task_index = parentNode.getAttribute("data-task-index");
+                data.board_index = board_index;
                 data.cta_action = 'update-task-assignment';
                 let url = '/boards/' + board_key + '/task-update-request';
 
@@ -112,19 +113,8 @@
                     data: data,
                     dataType: 'json',
                     success: function(data){
-                        console.log('recieving', data);
-                        if ( data ) {
-                            if (e.target.selectedOptions[0].value) {
-                                let unassignedUrl = `/boards/${board_key}/${board_index}/${parentNode.getAttribute("data-task-index")}/unassign-task`;
-                                parentNode.innerHTML = `<span title="${text}" class="text-truncate">${text}</span>
-                                <span>
-                                    <button onclick="assignTasktoBoardMember(event)" class="badge badge-primary badge-pill"><i class="fas fa-user-edit"></i></button>
-                                    <a href="${unassignedUrl}" class="badge badge-danger badge-pill"><i class="fas fa-trash"></i></a>
-                                </span>`;
-                            } else {
-                                parentNode.innerHTML = ` ---
-                                <button onclick="assignTasktoBoardMember(event)" class="badge badge-primary badge-pill"><i class="fas fa-user-edit"></i></button>`;
-                            }
+                        if ( data.url ) {
+                            location.replace(data.url);
                         }
                     },
                     error: function(data, textStatus, errorThrown) {
@@ -159,6 +149,7 @@
                 data.task_completed = e.target.checked;
                 data.board_key = board_key;
                 data.task_index = e.target.getAttribute("data-task-index");
+                data.board_index = board_index;
                 data.cta_action = 'update-task-completed';
                 let url = '/boards/' + board_key + '/task-update-request';
 
@@ -169,15 +160,8 @@
                     data: data,
                     dataType: 'json',
                     success: function(data){
-                        console.log('recieving', data);
-                        if ( data ) {
-                            const targetRowElements = parentNode.children;
-                            if (data.completed) {
-                                const node = getComptedOnTimeDateChildNode(data.completed_on);
-                                targetRowElements[1].innerHTML = data.task_title + node;
-                            } else {
-                                targetRowElements[1].innerHTML = data.task_title;
-                            }
+                        if ( data.url ) {
+                            location.replace(data.url);
                         }
                     },
                     error: function(data, textStatus, errorThrown) {

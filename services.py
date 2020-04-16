@@ -20,16 +20,18 @@ class TaskUpdateRequestProcess( webapp2.RequestHandler ):
 
         if cta_action == "update-task-assignment":
             member_key = data_list[0].split('=')[1]
-            task_index = int(data_list[2].split('=')[1])-1
+            task_index = int(data_list[2].split('=')[1])
+            board_index = data_list[3].split('=')[1]
             board = ndb.Key('Board', int(board_key)).get()
 
             board.tasks[task_index].assigned_to = member_key
             board.put()
-            self.response.write( json.dumps( {"response": member_key } ) )
+            self.response.write( json.dumps( {"url": '/boards/' + board_key + '/' + board_index } ) )
             return
         elif cta_action == "update-task-completed":
             completed = True if data_list[0].split('=')[1].capitalize() == "True" else False
-            task_index = int(data_list[2].split('=')[1])-1
+            task_index = int(data_list[2].split('=')[1])
+            board_index = data_list[3].split('=')[1]
             board = ndb.Key('Board', int(board_key)).get()
             board.tasks[task_index].completed = completed
             response_dict = {}
@@ -42,5 +44,6 @@ class TaskUpdateRequestProcess( webapp2.RequestHandler ):
             response_dict['completed_on'] = time.mktime(board.tasks[task_index].completed_on.timetuple()) if completed else None
             response_dict['task_title'] = board.tasks[task_index].title
             response_dict['task_index'] = task_index
+            response_dict['url'] = '/boards/' + board_key + '/' + board_index
             self.response.write( json.dumps( response_dict ) )
             return
