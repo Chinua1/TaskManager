@@ -93,7 +93,7 @@ class InviteMemberPage( webapp2.RequestHandler ):
             'main_label': 'Invite Member',
             'main_label_icon': "fas fa-user-plus fa-2x",
             'board_key': board_key,
-            'users': User.query().fetch(),
+            'users': self.getNonBoardMemberList(User.query().fetch(), ndb.Key("Board", int(board_key)).get()),
             'board_index': int(board_index),
             'members_json': json.dumps( [] ),
             'member_ids': json.dumps( [] )
@@ -150,3 +150,14 @@ class InviteMemberPage( webapp2.RequestHandler ):
             if str(user.key.id()) == member_key:
                 member = user
         return member
+
+    def getNonBoardMemberList( self, user_list, board):
+        non_member_list = []
+        for user in user_list:
+            non_member = True
+            for key in board.members:
+                if str(user.key.id()) == key:
+                    non_member = False
+            if non_member:
+                non_member_list.append(user)
+        return non_member_list
