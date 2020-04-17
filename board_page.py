@@ -15,6 +15,7 @@ from user import User
 from board import Board
 
 from create_board import CreateBoardPage
+from datetime import datetime as str_datetime
 
 start = os.path.dirname( __file__ )
 rel_path = os.path.join(start, 'templates')
@@ -111,6 +112,9 @@ class SelectedBoardPage( webapp2.RequestHandler ):
             'board_index': int(board_index),
             'members_json': json.dumps( [ dict(user.to_dict(), **dict(id=user.key.id())) for user in  User.query().fetch() ] ),
             'member_ids': json.dumps( board.members ),
+            'active_task': self.getActiveTasksCount(board),
+            'completed_task': self.getCompletedTasksCount(board),
+            'today_completed_task': self.getTodayCompletedTasksCount(board),
             'dublintz': timezone('Europe/Dublin'),
             'utc': pytz.utc,
             'dt_convert': dt_convert,
@@ -168,3 +172,30 @@ class SelectedBoardPage( webapp2.RequestHandler ):
                     member_list.append( user )
 
         return member_list
+
+    def getActiveTasksCount(self, board):
+        active_task = 0
+        for task in board.tasks:
+            if task.completed:
+                pass
+            else:
+                active_task += 1
+
+        return active_task
+
+
+    def getCompletedTasksCount(self, board):
+        completed_task = 0
+        for task in board.tasks:
+            if task.completed:
+                completed_task += 1
+        return completed_task
+
+    def getTodayCompletedTasksCount(self, board):
+        tct = 0
+        today = datetime.datetime.now().strftime('%Y-%m-%d')
+        for task in board.tasks:
+            if task.completed_on:
+                if task.completed_on.strftime('%Y-%m-%d') == today:
+                    tct += 1
+        return tct

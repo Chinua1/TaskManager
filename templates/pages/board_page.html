@@ -40,7 +40,9 @@
                         >
                             <div class="member-item d-flex justify-content-between">
                                 <span class="text-truncate">{{member.firstname}} {{member.lastname}}(<span class="abbrv-name">{{member.initials}}</span>)</span>
-                                {% if not board.created_by == member.key.id()|string and board.created_by == logged_user.key.id()|string %}
+                                {% if board.created_by == member.key.id()|string %}
+                                    <small class="text-muted" style="font-family: serif; font-weight: 100; font-size: 100%; font-style: italic; display: flex; align-items: center;">(Creator)</small>
+                                {% elif not board.created_by == member.key.id()|string and board.created_by == logged_user.key.id()|string %}
                                     <a href="/boards/{{board.key.id()}}/{{board_index}}/{{member.key.id()}}/remove-board-member" class="delete-user">x</a>
                                 {% endif %}
                             </div>
@@ -50,10 +52,18 @@
             </div>
         </div>
         <div class="row">
-           <div class="col-12">
+           <div class="col-12 mt-4">
                <ul class="row inline-list">
-                   <li class="list-tab">
+                   <li class="list-tab d-flex justify-content-between">
                        <a href="#">Task List</a>
+                       {% if board.tasks|length > 0%}
+                       <div class="text-muted ml-5 mr-5" style="display: flex; align-items: flex-end; font-size: 80%; font-style: italic; font-family: serif;">
+                            <span class="mr-4">Total Tasks=> <strong style="font-size: 100%; font-weight: 900;">{{board.tasks|length}}</strong></span>
+                            <span class="mr-4">Active Tasks=> <strong style="font-size: 100%; font-weight: 900;">{{active_task}}</strong></span>
+                            <span class="mr-4">Completed Tasks=> <strong style="font-size: 100%; font-weight: 900;">{{completed_task}}</strong></span>
+                            <span class="mr-4">Today's Completed Tasks=> <strong style="font-size: 100%; font-weight: 900;">{{today_completed_task}}</strong></span>
+                       </div>
+                       {% endif %}
                     </li>
                </ul>
            </div>
@@ -89,7 +99,7 @@
                                     <td class="{% if task.high_lighted %} text-danger {% endif %}">
                                         {{task.title}}
                                         {% if task.completed %}
-                                            <br /><small>Completed On <strong>{{task.completed_on.strftime('%b %d %Y')}}</strong> at {{ utc.localize(dt_convert.utcfromtimestamp(time.mktime(task.completed_on.timetuple()))).astimezone(dublintz).strftime('%H:%M:%S') }}</small>
+                                         <br /><small>Completed On <strong>{{task.completed_on.strftime('%b %d %Y')}}</strong> at {{ utc.localize(dt_convert.utcfromtimestamp(time.mktime(task.completed_on.timetuple()))).astimezone(dublintz).strftime('%H:%M:%S') }}</small>
                                         {% endif %}
                                     </td>
                                     <td style="width: 150px;">{{task.due_date}}</td>
