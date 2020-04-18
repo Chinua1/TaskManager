@@ -8,6 +8,9 @@
     <div class="col-9">
         <span class="board-title h3">{{board.title}}</span>
         <a href="/boards/{{board.key.id()}}/{{board_index}}/edit-board-name" class="btn btn-m btn-outline-warning ml-4">Edit</a>
+        {% if board.members|length <= 1 and board.tasks|length <= 0 %}
+          <a href="/boards/{{board.key.id()}}/{{board_index}}/delete-board" class="btn btn-m btn-outline-danger ml-2 mr-4">Delete</a>
+      {% endif %}
     </div>
     <ul class="col-3 inline-list d-flex justify-content-end">
         {% if board.created_by == logged_user.key.id()|string %}

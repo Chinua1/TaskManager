@@ -113,7 +113,6 @@
                     data: data,
                     dataType: 'json',
                     success: function(data){
-                        console.log('recieving', data);
                         if ( data.url ) {
                             location.replace(data.url);
                         }
@@ -155,21 +154,30 @@
                 let url = '/boards/' + board_key + '/task-update-request';
 
                 $.ajax({
-                    type: 'POST',
-                    url: url,
-                    contentType: 'application/json',
-                    data: data,
-                    dataType: 'json',
-                    success: function(data){
-                        if ( data.url ) {
-                            location.replace(data.url);
-                        }
-                    },
-                    error: function(data, textStatus, errorThrown) {
-                        console.log(data);
-                    }
-                });
-            }
+                      type: 'POST',
+                      url: url,
+                      contentType: 'application/json',
+                      data: data,
+                      dataType: 'json',
+                      success: function(data){
+                          if ( data.url ) {
+                              location.replace(data.url);
+                          } else {
+                              const targetRowElements = parentNode.children;
+                              if (data.completed) {
+                                  const node = getComptedOnTimeDateChildNode(data.completed_on);
+                                  targetRowElements[1].innerHTML = data.task_title + node;
+                              } else {
+                                  targetRowElements[1].innerHTML = data.task_title;
+                              }
+                              location.reload();
+                          }
+                      },
+                      error: function(data, textStatus, errorThrown) {
+                          console.log(data);
+                      }
+                  });
+              }
 
             function getComptedOnTimeDateChildNode(timestamp) {
                 const unix_timestamp = parseInt(timestamp, 10);

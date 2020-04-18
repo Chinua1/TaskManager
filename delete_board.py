@@ -27,7 +27,7 @@ class DeleteBoardPage( webapp2.RequestHandler ):
         logged_user.boards.remove(str(board.get().key.id()))
         logged_user.put()
         board.delete()
-        message = board_title.capitalize() + ' Board deleted successfully'
+        message = board_title.capitalize() + ' board successfully deleted'
         query_string = '?success=' + message
         url = '/boards' + query_string
         self.redirect(url)
