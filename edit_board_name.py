@@ -122,7 +122,7 @@ class EditBoardNamePage( webapp2.RequestHandler ):
             board = ndb.Key( 'Board', int(board_key) ).get()
 
             if not str(logged_user.key.id()) in board.members:
-                message = 'Access Denied. Your membership has been revoked.'
+                message = 'Access Denied. Your membership may have been revoked.'
                 query_string = '?failed=' + message
                 url = '/boards' + query_string
                 self.redirect( url )
@@ -130,7 +130,7 @@ class EditBoardNamePage( webapp2.RequestHandler ):
             if board_title:
                 board.title = board_title
                 board.put()
-                message = board_title + " Board has been updated successfully."
+                message = board_title + " Board has been successfully renamed."
                 query_string = "?success=" + message
                 url = "/boards" + query_string
                 self.redirect( url )

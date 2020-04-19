@@ -121,7 +121,7 @@ class CreateBoardPage( webapp2.RequestHandler ):
                 logged_user.put()
 
                 if board:
-                    message = board_title + " Board was created successfully."
+                    message = board_title + " Board was successfully created."
                     query_string = "?success=" + message
                     url = "/boards" + query_string
                     self.redirect( url )
