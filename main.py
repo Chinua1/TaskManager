@@ -144,7 +144,7 @@ class MainPage( webapp2.RequestHandler ):
                 logged_user.initials = self.getLoggedUserInitials( firstname + ' ' + lastname )
                 logged_user.email = user.email()
                 logged_user.put()
-                message = "Thank you " + firstname.capitalize() + " " + lastname.capitalize() + " for updating your details."
+                message = "Thank you " + firstname.capitalize() + " " + lastname.capitalize() + " for registering your account."
                 query_string = "?success=" + message + "&firstname=" + firstname + "&lastname=" + lastname
                 url = "/boards" + query_string
                 self.redirect( url )
